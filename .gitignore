@@ -1,0 +1,13 @@
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Temporary search files
+rulebook_search.txt
+rulebook_sections.txt
+
+# Fusion 360 / CAD cache
+*.bak
+*.tmp
