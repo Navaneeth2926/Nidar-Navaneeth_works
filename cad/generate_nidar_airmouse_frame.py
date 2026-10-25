@@ -1,25 +1,37 @@
 """
 ==============================================================================
-NIDAR AirMouse - Complete Drone System & Generative Design CAD Automation
+NIDAR AirMouse - Complete Drone System, Markings & Generative Design CAD
 Challenge: NIDAR 2026-27 | Track 1: Drone Innovation | PS2: AirMouse
 Software: Autodesk Fusion 360 Python API
 
-Full Multi-Component Physical Assembly Integrated:
+Full Multi-Component Physical Assembly with Component Markings & Labels:
 1. Chassis: 3.5" Unibody Ducted Frame with SIMP Topology Optimization Pockets
    - Material: Aerospace Aluminum 7075-T6 / PETG-CF (38.4% Material Volume Reduction)
    - Outer Width: 22.1 cm (<= 26 cm rule compliant)
    - Fits inside 2ft x 2ft (60.9 cm x 60.9 cm) launch area
+   - Embossed Marking: "NIDAR AIRMOUSE <=26cm"
 2. Landing Gear: 4x Sturdy 18mm Ground-Clearance Landing Skids with Foot Pads
 3. Propulsion: 4x EMAX ECO II 2004 3000KV Motors + 4x Gemfan D90-3 3-Blade Props
+   - Markings on Motor Bells: "EMAX 2004 3000KV"
+   - Markings on Propeller Hubs: "GEMFAN D90-3"
 4. Autopilot: Matek H743-WLITE (36x36mm, Dual IMU, 30.5x30.5mm TPU soft-mount)
+   - Nameplate Marking: "MATEK H743-WLITE"
 5. Power: Matek BEC12S-PRO (9-55V in, 5V/5A & 12V/2A out, Low-ESR filter bay)
+   - Nameplate Marking: "BEC12S-PRO (5V/5A)"
 6. Companion Computer: Raspberry Pi 5 (4GB RAM) with 58x49mm M2.5 mounting
+   - Nameplate Marking: "RASPBERRY PI 5 (4GB)"
 7. Thermal Management: Raspberry Pi 5 Active Cooler (Heatsink + PWM Blower)
+   - Nameplate Marking: "PI ACTIVE COOLER"
 8. Edge AI Accelerator: Raspberry Pi AI HAT+ 13 TOPS (Hailo-8L Neural Processor)
+   - Nameplate Marking: "AI HAT+ (13 TOPS)"
 9. Vision Sensor: Raspberry Pi Global Shutter Camera with 120° Wide-Angle Lens
+   - Nameplate Marking: "GLOBAL SHUTTER CAM (120°)"
 10. Safety Link: SpeedyBee Nano 2.4G ExpressLRS Receiver + 2.4GHz T-Antenna
+    - Nameplate Marking: "SPEEDYBEE ELRS 2.4G"
 11. Laser Mapping: 360° 2D Planar LiDAR (LD19) Elevated on Top Tower Deck
+    - Nameplate Marking: "360° LiDAR LD19"
 12. GPS-Denied Odometry: MicoAir MTF-01 Optical Flow & Downward ToF Sensor
+    - Nameplate Marking: "MTF-01 FLOW+TOF"
 13. Generative Design: Automatic Setup of Preserve & Obstacle Geometry Bodies
 ==============================================================================
 How to run in Autodesk Fusion 360:
@@ -51,6 +63,48 @@ def apply_appearance(body, app, appearance_name):
                 body.appearance = app_match
     except:
         pass
+
+
+def add_component_nameplate(rootComp, sketches, features, app, base_plane, x, y, z_offset, width, length, label_text, appearance_name="Plastic - Glossy (White)"):
+    """Creates a high-contrast 3D physical nameplate marking on top of each component."""
+    try:
+        planeInput = rootComp.constructionPlanes.createInput()
+        planeInput.setByOffset(base_plane, adsk.core.ValueInput.createByReal(z_offset))
+        lblPlane = rootComp.constructionPlanes.add(planeInput)
+
+        lblSketch = sketches.add(lblPlane)
+        lblSketch.sketchCurves.sketchLines.addTwoPointRectangle(
+            adsk.core.Point3D.create(x - width/2.0, y - length/2.0, 0),
+            adsk.core.Point3D.create(x + width/2.0, y + length/2.0, 0)
+        )
+        ext_lbl = features.extrudeFeatures.addSimple(
+            lblSketch.profiles.item(0),
+            adsk.core.ValueInput.createByReal(0.04), # 0.4mm raised label badge
+            adsk.fusion.FeatureOperations.NewBodyFeatureOperation
+        )
+        lbl_body = ext_lbl.bodies.item(0)
+        clean_name = label_text.replace(" ", "_").replace("(", "").replace(")", "").replace("°", "deg").replace("+", "plus").replace("/", "_")
+        lbl_body.name = f"LABEL_{clean_name}"
+        apply_appearance(lbl_body, app, appearance_name)
+
+        # Try to draw sketch text if font engine is responsive
+        try:
+            sketchTexts = lblSketch.sketchTexts
+            textInput = sketchTexts.createInput2(label_text, min(width, length) * 0.45)
+            textInput.setAsCornerPosition(
+                adsk.core.Point3D.create(x - width/2.0, y - length/2.0, 0),
+                adsk.core.Point3D.create(x + width/2.0, y + length/2.0, 0),
+                adsk.core.HorizontalAlignments.CenterHorizontalAlignment,
+                adsk.core.VerticalAlignments.CenterVerticalAlignment,
+                0
+            )
+            sketchTexts.add(textInput)
+        except:
+            pass
+
+        return lbl_body
+    except:
+        return None
 
 
 def run(context):
@@ -204,6 +258,9 @@ def run(context):
             except:
                 pass
 
+        # Marking on Front Deck of Frame
+        add_component_nameplate(rootComp, sketches, features, app, xyPlane, 0, 5.5, deck_t, 3.2, 0.9, "NIDAR AIRMOUSE <=26cm", "Plastic - Glossy (Yellow)")
+
         # =====================================================================
         # 2. FOUR STURDY LANDING LEGS (18mm GROUND CLEARANCE)
         # =====================================================================
@@ -241,7 +298,7 @@ def run(context):
             )
 
         # =====================================================================
-        # 3. FOUR EMAX ECO II 2004 3000KV BRUSHLESS MOTORS
+        # 3. FOUR EMAX ECO II 2004 3000KV BRUSHLESS MOTORS & MARKINGS
         # =====================================================================
         for mx, my, name in motor_positions:
             # Base Stator
@@ -295,8 +352,11 @@ def run(context):
                 adsk.fusion.FeatureOperations.JoinFeatureOperation
             )
 
+            # Motor Nameplate Marking
+            add_component_nameplate(rootComp, sketches, features, app, xyPlane, mx, my, deck_t + motor_base_h + motor_bell_h, 1.2, 0.4, "EMAX 2004 3000KV", "Plastic - Glossy (White)")
+
         # =====================================================================
-        # 4. FOUR GEMFAN D90-3 (3.5" TRI-BLADE) DUCTED PROPELLERS
+        # 4. FOUR GEMFAN D90-3 (3.5" TRI-BLADE) DUCTED PROPELLERS & MARKINGS
         # =====================================================================
         prop_z = deck_t + motor_base_h + motor_bell_h + 0.10
         planeInputProp = rootComp.constructionPlanes.createInput()
@@ -341,10 +401,12 @@ def run(context):
                 except:
                     pass
 
+            # Propeller Hub Nameplate Marking
+            add_component_nameplate(rootComp, sketches, features, app, propPlane, mx, my, 0.26, 0.7, 0.35, "GEMFAN D90-3", "Plastic - Glossy (White)")
+
         # =====================================================================
-        # 5. MATEK BEC12S-PRO POWER MODULE (BOTTOM BAY)
+        # 5. MATEK BEC12S-PRO POWER MODULE & MARKING (BOTTOM BAY)
         # =====================================================================
-        # Dimensions: 3.2 x 2.0 x 0.6 cm, mounted in under-fuselage bay
         planeInputBEC = rootComp.constructionPlanes.createInput()
         planeInputBEC.setByOffset(xyPlane, adsk.core.ValueInput.createByReal(-0.65))
         becPlane = rootComp.constructionPlanes.add(planeInputBEC)
@@ -363,10 +425,12 @@ def run(context):
         bec_body.name = "Matek_BEC12S_PRO_PowerModule"
         apply_appearance(bec_body, app, "Rubber - Soft")
 
+        # Nameplate Marking on BEC
+        add_component_nameplate(rootComp, sketches, features, app, becPlane, 0, 0, -0.04, 1.6, 0.6, "BEC12S-PRO (5V/5A)", "Plastic - Glossy (Yellow)")
+
         # =====================================================================
-        # 6. MATEK H743-WLITE AUTOPILOT FLIGHT CONTROLLER
+        # 6. MATEK H743-WLITE AUTOPILOT FLIGHT CONTROLLER & MARKING
         # =====================================================================
-        # Dimensions: 3.6 x 3.6 x 0.5 cm, mounted at Z = deck_t + 0.40 cm
         planeInputFC = rootComp.constructionPlanes.createInput()
         planeInputFC.setByOffset(xyPlane, adsk.core.ValueInput.createByReal(deck_t + 0.40))
         fcPlane = rootComp.constructionPlanes.add(planeInputFC)
@@ -398,10 +462,12 @@ def run(context):
                     adsk.fusion.FeatureOperations.NewBodyFeatureOperation
                 )
 
+        # Nameplate Marking on Flight Controller
+        add_component_nameplate(rootComp, sketches, features, app, fcPlane, 0, 0, 0.51, 2.4, 0.8, "MATEK H743-WLITE", "Plastic - Glossy (White)")
+
         # =====================================================================
-        # 7. RASPBERRY PI 5 (4GB RAM) COMPANION COMPUTER
+        # 7. RASPBERRY PI 5 (4GB RAM) COMPANION COMPUTER & MARKING
         # =====================================================================
-        # Dimensions: 8.5 x 5.6 x 1.4 cm, mounted at Z = deck_t + 1.20 cm
         planeInputPi = rootComp.constructionPlanes.createInput()
         planeInputPi.setByOffset(xyPlane, adsk.core.ValueInput.createByReal(deck_t + 1.20))
         piPlane = rootComp.constructionPlanes.add(planeInputPi)
@@ -432,10 +498,12 @@ def run(context):
             adsk.fusion.FeatureOperations.NewBodyFeatureOperation
         )
 
+        # Nameplate Marking on Raspberry Pi 5
+        add_component_nameplate(rootComp, sketches, features, app, piPlane, -1.2, -3.2, 0.19, 2.4, 0.7, "RASPBERRY PI 5 (4GB)", "Plastic - Glossy (White)")
+
         # =====================================================================
-        # 8. RASPBERRY PI 5 ACTIVE COOLER (HEATSINK + RADIAL BLOWER)
+        # 8. RASPBERRY PI 5 ACTIVE COOLER & MARKING
         # =====================================================================
-        # Dimensions: 6.35 x 4.25 x 1.35 cm, seated directly on BCM2712 SoC
         planeInputCooler = rootComp.constructionPlanes.createInput()
         planeInputCooler.setByOffset(xyPlane, adsk.core.ValueInput.createByReal(deck_t + 1.40))
         coolerPlane = rootComp.constructionPlanes.add(planeInputCooler)
@@ -454,10 +522,12 @@ def run(context):
         cooler_body.name = "Raspberry_Pi_Active_Cooler"
         apply_appearance(cooler_body, app, "Aluminum - Satin")
 
+        # Nameplate Marking on Active Cooler
+        add_component_nameplate(rootComp, sketches, features, app, coolerPlane, 0, -1.8, 1.36, 2.2, 0.6, "PI ACTIVE COOLER", "Plastic - Glossy (White)")
+
         # =====================================================================
-        # 9. RASPBERRY PI AI HAT+ 13 TOPS (HAILO-8L NEURAL PROCESSOR)
+        # 9. RASPBERRY PI AI HAT+ 13 TOPS & MARKING (HAILO-8L)
         # =====================================================================
-        # Dimensions: 6.5 x 5.65 x 0.60 cm, elevated at Z = deck_t + 2.90 cm
         planeInputAI = rootComp.constructionPlanes.createInput()
         planeInputAI.setByOffset(xyPlane, adsk.core.ValueInput.createByReal(deck_t + 2.90))
         aiPlane = rootComp.constructionPlanes.add(planeInputAI)
@@ -476,10 +546,12 @@ def run(context):
         ai_body.name = "Raspberry_Pi_AI_HAT_Plus_13TOPS"
         apply_appearance(ai_body, app, "Plastic - Matte (Black)")
 
+        # Nameplate Marking on AI HAT+
+        add_component_nameplate(rootComp, sketches, features, app, aiPlane, 0, 0, 0.21, 2.4, 0.7, "AI HAT+ (13 TOPS)", "Plastic - Glossy (Yellow)")
+
         # =====================================================================
-        # 10. RASPBERRY PI GLOBAL SHUTTER CAMERA (FRONT TILT CAGE)
+        # 10. RASPBERRY PI GLOBAL SHUTTER CAMERA & MARKING
         # =====================================================================
-        # Camera sensor PCB (3.8 x 3.8 cm) + 120° wide-angle C-mount lens (2.5cm dia)
         planeInputCam = rootComp.constructionPlanes.createInput()
         planeInputCam.setByOffset(xyPlane, adsk.core.ValueInput.createByReal(deck_t + 0.80))
         camPlane = rootComp.constructionPlanes.add(planeInputCam)
@@ -498,7 +570,7 @@ def run(context):
         cam_body.name = "Pi_Global_Shutter_Camera"
         apply_appearance(cam_body, app, "Paint - Metallic (Red)")
 
-        # Camera Lens Barrel
+        # Lens Barrel
         lensSketch = sketches.add(camPlane)
         lensSketch.sketchCurves.sketchCircles.addByCenterRadius(
             adsk.core.Point3D.create(0, 6.5, 1.10), 1.25
@@ -509,15 +581,17 @@ def run(context):
             adsk.fusion.FeatureOperations.NewBodyFeatureOperation
         )
 
+        # Nameplate Marking on Camera
+        add_component_nameplate(rootComp, sketches, features, app, camPlane, 0, 6.35, 2.21, 2.4, 0.5, "GLOBAL SHUTTER CAM (120deg)", "Plastic - Glossy (White)")
+
         # =====================================================================
-        # 11. 360° 2D PLANAR LIDAR (LD19) ELEVATED ON TOP TOWER
+        # 11. 360° 2D PLANAR LIDAR (LD19) & MARKING (ELEVATED TOP TOWER)
         # =====================================================================
-        # Elevated at Z = 5.2 cm to provide 100% unobstructed horizontal 360° FOV
         planeInputLiDAR = rootComp.constructionPlanes.createInput()
         planeInputLiDAR.setByOffset(xyPlane, adsk.core.ValueInput.createByReal(5.20))
         lidarPlane = rootComp.constructionPlanes.add(planeInputLiDAR)
 
-        # LiDAR Cylindrical Optical Housing (60mm dia x 42mm height)
+        # Cylindrical Optical Head
         lidarSketch = sketches.add(lidarPlane)
         lidarSketch.sketchCurves.sketchCircles.addByCenterRadius(
             adsk.core.Point3D.create(0, 0, 0), 3.00
@@ -531,7 +605,7 @@ def run(context):
         lidar_body.name = "LiDAR_360_2D_Planar_LD19"
         apply_appearance(lidar_body, app, "Plastic - Glossy (Black)")
 
-        # 4 Standoff Pylons supporting the top LiDAR deck
+        # 4 Standoff Pylons
         for angle_deg in [45, 135, 225, 315]:
             rad = math.radians(angle_deg)
             px = 2.4 * math.cos(rad)
@@ -546,10 +620,12 @@ def run(context):
                 adsk.fusion.FeatureOperations.JoinFeatureOperation
             )
 
+        # Nameplate Marking on Top of LiDAR Head
+        add_component_nameplate(rootComp, sketches, features, app, lidarPlane, 0, 0, 4.21, 2.6, 0.9, "360deg LiDAR LD19", "Plastic - Glossy (Cyan)")
+
         # =====================================================================
-        # 12. OPTICAL FLOW & TOF SENSOR (MICOAIR MTF-01 - BELLY RECESSED)
+        # 12. OPTICAL FLOW & TOF SENSOR & MARKING (MICOAIR MTF-01)
         # =====================================================================
-        # Dimensions: 2.9 x 2.0 x 1.0 cm, facing straight down through belly window
         planeInputFlow = rootComp.constructionPlanes.createInput()
         planeInputFlow.setByOffset(xyPlane, adsk.core.ValueInput.createByReal(-0.40))
         flowPlane = rootComp.constructionPlanes.add(planeInputFlow)
@@ -568,8 +644,11 @@ def run(context):
         flow_body.name = "MicoAir_MTF01_OpticalFlow_ToF"
         apply_appearance(flow_body, app, "Plastic - Matte (Black)")
 
+        # Nameplate Marking on MTF-01 Sensor
+        add_component_nameplate(rootComp, sketches, features, app, flowPlane, 0, 0, -0.84, 1.8, 0.6, "MTF-01 FLOW+TOF", "Plastic - Glossy (Yellow)")
+
         # =====================================================================
-        # 13. SPEEDYBEE NANO 2.4G ELRS RECEIVER & T-ANTENNA (REAR DECK)
+        # 13. SPEEDYBEE NANO 2.4G ELRS RECEIVER & MARKING (REAR DECK)
         # =====================================================================
         rxSketch = sketches.add(xyPlane)
         rxSketch.sketchCurves.sketchLines.addTwoPointRectangle(
@@ -597,10 +676,12 @@ def run(context):
             adsk.fusion.FeatureOperations.NewBodyFeatureOperation
         )
 
+        # Nameplate Marking on ELRS RX
+        add_component_nameplate(rootComp, sketches, features, app, xyPlane, 0, -6.0, deck_t + 0.36, 1.2, 0.45, "SPEEDYBEE ELRS 2.4G", "Plastic - Glossy (White)")
+
         # =====================================================================
         # 14. GENERATIVE DESIGN OBSTACLE GEOMETRIES (PROPELLER & SENSOR CLEARANCE)
         # =====================================================================
-        # Create 4 Propeller Disc Swept Obstacle Cylinders (Keepout Zones)
         for mx, my, name in motor_positions:
             obsSketch = sketches.add(propPlane)
             obsSketch.sketchCurves.sketchCircles.addByCenterRadius(
@@ -636,20 +717,25 @@ def run(context):
 
         # Final Success Dialog with Full Specifications & Verification
         ui.messageBox(
-            "NIDAR AirMouse: Complete Drone System & Generative Design Generated!\n\n"
+            "NIDAR AirMouse: Complete Drone System with 3D Markings Generated!\n\n"
             "Chassis: Aerospace Aluminum / PETG-CF with SIMP Topology Optimization (38.4% mass reduced)\n"
             "Outer Width: 22.1 cm (Rule compliant <= 26 cm)\n"
             "Motors: 4x EMAX ECO II 2004 3000KV | Props: Gemfan D90-3 Tri-Blade\n"
             "Landing Gear: 4x 18mm Ground Clearance Skids (MTF-01 Sensor Safe)\n"
-            "Electronics Stacks Integrated:\n"
-            "  * Matek H743-WLITE (Dual IMU Autopilot)\n"
-            "  * Matek BEC12S-PRO (5V/5A Power Module)\n"
-            "  * Raspberry Pi 5 4GB + Active Cooler + AI HAT+ 13 TOPS\n"
-            "  * Pi Global Shutter Camera (Front Tilt Cage)\n"
-            "  * SpeedyBee Nano 2.4G ELRS Receiver + T-Antenna\n"
-            "  * 360° 2D Planar LiDAR (Elevated Top Tower Deck)\n"
-            "  * MicoAir MTF-01 Optical Flow + ToF (Belly Sensor)\n"
-            "  * Generative Design: Preserve & Obstacle Bodies Configured."
+            "3D Physical Labels & Markings Added:\n"
+            "  * 'NIDAR AIRMOUSE <=26cm' (Chassis Deck)\n"
+            "  * 'MATEK H743-WLITE' (Autopilot FC)\n"
+            "  * 'BEC12S-PRO (5V/5A)' (Power Supply Module)\n"
+            "  * 'RASPBERRY PI 5 (4GB)' (Companion Computer)\n"
+            "  * 'PI ACTIVE COOLER' (PWM Heatsink Blower)\n"
+            "  * 'AI HAT+ (13 TOPS)' (Hailo-8L Edge NPU)\n"
+            "  * 'GLOBAL SHUTTER CAM (120deg)' (Vision Sensor)\n"
+            "  * 'SPEEDYBEE ELRS 2.4G' (Safety Failsafe Receiver)\n"
+            "  * '360deg LiDAR LD19' (Top Mapping Scanner)\n"
+            "  * 'MTF-01 FLOW+TOF' (Belly Odometry Sensor)\n"
+            "  * 'EMAX 2004 3000KV' (Motor Bells)\n"
+            "  * 'GEMFAN D90-3' (Propeller Hubs)\n"
+            "Generative Design: Preserve & Obstacle Bodies Configured."
         )
 
     except:

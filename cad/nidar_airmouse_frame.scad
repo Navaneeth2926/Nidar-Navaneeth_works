@@ -1,8 +1,9 @@
 // ==============================================================================
-// NIDAR AirMouse: 3.5" Complete Drone System & Additive Manufacturing Model
+// NIDAR AirMouse: 3.5" Complete Drone System with 3D Component Markings
 // Challenge: NIDAR 2026-27 | Track 1 - Drone Innovation | AirMouse
 // Fully models: Frame, Landing Skids, Motors, Props, FC, BEC, Pi 5, Active Cooler,
 // AI HAT+, Global Shutter Cam, SpeedyBee ELRS, 360 LiDAR, and MTF-01 Optical Flow.
+// Includes 3D Physical Markings and Labels on every component.
 // ==============================================================================
 
 $fn = 50;
@@ -37,8 +38,15 @@ leg_radius           = 4.5;   // mm
 foot_radius          = 8.5;   // mm
 foot_height          = 3.0;   // mm
 
+// Helper for 3D raised text markings
+module label_3d(txt, sz=2.5, h=0.5) {
+    color([1.0, 1.0, 1.0])
+    linear_extrude(height = h)
+        text(txt, size = sz, font = "Liberation Sans:style=Bold", halign = "center", valign = "center");
+}
+
 // ==============================================================================
-// 1. CHASSIS WITH SIMP TOPOLOGY OPTIMIZATION WEIGHT REDUCTION
+// 1. CHASSIS WITH SIMP TOPOLOGY OPTIMIZATION WEIGHT REDUCTION & MARKINGS
 // ==============================================================================
 module chassis_deck() {
     color([0.32, 0.35, 0.38]) { // Anodized Aerospace Aluminum / PETG-CF
@@ -65,6 +73,9 @@ module chassis_deck() {
             translate([-20, 0, 0]) cylinder(r = 6.5, h = 10, center = true);
         }
     }
+    // Chassis 3D Text Marking
+    translate([0, 58.0, deck_thickness/2])
+        label_3d("NIDAR AIRMOUSE <=26cm", sz = 2.8, h = 0.6);
 }
 
 // 2. Ducted Shroud & Motor Pod
@@ -111,7 +122,7 @@ module landing_skid(mx, my) {
     }
 }
 
-// 4. EMAX ECO II 2004 3000KV Motor
+// 4. EMAX ECO II 2004 3000KV Motor & Markings
 module emax_motor(mx, my) {
     base_z = -duct_height/2 + deck_thickness;
     translate([mx, my, base_z]) {
@@ -120,10 +131,13 @@ module emax_motor(mx, my) {
             cylinder(r = motor_bell_radius, h = motor_bell_height);
         color([0.85, 0.85, 0.90]) translate([0, 0, motor_base_height + motor_bell_height])
             cylinder(r = motor_shaft_radius, h = motor_shaft_height);
+        // Motor Label
+        translate([0, 0, motor_base_height + motor_bell_height + 0.1])
+            label_3d("EMAX 2004", sz = 1.8, h = 0.4);
     }
 }
 
-// 5. Gemfan D90-3 Tri-Blade Propeller
+// 5. Gemfan D90-3 Tri-Blade Propeller & Markings
 module gemfan_prop(mx, my) {
     prop_z = -duct_height/2 + deck_thickness + motor_base_height + motor_bell_height + 1.0;
     translate([mx, my, prop_z]) {
@@ -136,18 +150,25 @@ module gemfan_prop(mx, my) {
                     cube([prop_radius - 4, 7.5, 1.8], center = true);
             }
         }
+        // Propeller Marking
+        translate([0, 0, 2.0])
+            label_3d("D90-3", sz = 1.6, h = 0.4);
     }
 }
 
 // ==============================================================================
-// 6. ELECTRONICS HARDWARE STACK
+// 6. ELECTRONICS HARDWARE STACK WITH PHYSICAL 3D MARKINGS
 // ==============================================================================
 
 // Matek BEC12S-PRO (Bottom Power Bay)
 module matek_bec() {
-    translate([0, 0, -duct_height/2 - 3.5])
+    translate([0, 0, -duct_height/2 - 3.5]) {
         color([0.1, 0.1, 0.1])
-        cube([20.0, 32.0, 6.0], center = true);
+            cube([20.0, 32.0, 6.0], center = true);
+        translate([0, 0, -3.2])
+            rotate([180, 0, 0])
+            label_3d("BEC12S-PRO 5V/5A", sz = 2.0, h = 0.4);
+    }
 }
 
 // Matek H743-WLITE Autopilot Flight Controller
@@ -155,6 +176,8 @@ module matek_fc() {
     translate([0, 0, -duct_height/2 + deck_thickness + 4.0]) {
         color([0.1, 0.25, 0.65]) cube([36.0, 36.0, 1.6], center = true); // Blue PCB
         color([0.7, 0.7, 0.75]) translate([0, 0, 2.0]) cube([16.0, 16.0, 2.5], center = true); // Shielded IMU
+        translate([0, -10.0, 1.0])
+            label_3d("MATEK H743-WLITE", sz = 2.2, h = 0.5);
     }
 }
 
@@ -162,39 +185,45 @@ module matek_fc() {
 module raspberry_pi_5() {
     translate([0, 0, -duct_height/2 + deck_thickness + 12.0]) {
         color([0.1, 0.55, 0.25]) cube([56.0, 85.0, 1.8], center = true); // Green PCB
-        // USB & Ethernet dual-tier stack
         color([0.7, 0.7, 0.7]) translate([0, 35.0, 7.0]) cube([48.0, 16.0, 14.0], center = true);
+        translate([-12.0, -32.0, 1.2])
+            label_3d("RASPBERRY PI 5 (4GB)", sz = 2.2, h = 0.5);
     }
 }
 
 // Raspberry Pi Active Cooler (Aluminum Heatsink + Blower)
 module pi_active_cooler() {
     translate([0, -5.0, -duct_height/2 + deck_thickness + 18.0]) {
-        color([0.8, 0.8, 0.85]) cube([42.5, 63.5, 8.0], center = true); // Silver fins
-        color([0.15, 0.15, 0.15]) translate([0, 10.0, 5.0]) cylinder(r = 15.0, h = 5.0, center = true); // Fan
+        color([0.8, 0.8, 0.85]) cube([42.5, 63.5, 8.0], center = true);
+        color([0.15, 0.15, 0.15]) translate([0, 10.0, 5.0]) cylinder(r = 15.0, h = 5.0, center = true);
+        translate([0, -18.0, 4.2])
+            label_3d("PI ACTIVE COOLER", sz = 2.2, h = 0.5);
     }
 }
 
 // Raspberry Pi AI HAT+ 13 TOPS (Hailo-8L Neural Processor)
 module pi_ai_hat() {
     translate([0, -5.0, -duct_height/2 + deck_thickness + 28.0]) {
-        color([0.85, 0.15, 0.15]) cube([56.5, 65.0, 1.6], center = true); // Red PCB
-        color([0.1, 0.1, 0.1]) translate([0, 0, 2.0]) cube([22.0, 30.0, 2.5], center = true); // Hailo-8L
+        color([0.85, 0.15, 0.15]) cube([56.5, 65.0, 1.6], center = true);
+        color([0.1, 0.1, 0.1]) translate([0, 0, 2.0]) cube([22.0, 30.0, 2.5], center = true);
+        translate([0, 0, 3.4])
+            label_3d("AI HAT+ (13 TOPS)", sz = 2.4, h = 0.5);
     }
 }
 
 // Raspberry Pi Global Shutter Camera with 120° Wide Lens
 module pi_camera() {
     translate([0, 68.0, 5.0]) {
-        color([0.7, 0.1, 0.1]) cube([38.0, 3.0, 38.0], center = true); // Sensor PCB
-        color([0.1, 0.1, 0.1]) rotate([90, 0, 0]) cylinder(r = 12.5, h = 24.0, center = true); // Lens
+        color([0.7, 0.1, 0.1]) cube([38.0, 3.0, 38.0], center = true);
+        color([0.1, 0.1, 0.1]) rotate([90, 0, 0]) cylinder(r = 12.5, h = 24.0, center = true);
+        translate([0, 0, 20.0])
+            label_3d("GLOBAL SHUTTER 120deg", sz = 2.0, h = 0.5);
     }
 }
 
 // 360° 2D Planar LiDAR (LD19) on Elevated Top Platform
 module lidar_360() {
     lidar_z = 52.0;
-    // Platform & Pylons
     color([0.3, 0.32, 0.35]) {
         translate([0, 0, lidar_z - 2.0]) cylinder(r = 32.0, h = 3.0, center = true);
         for (a = [45, 135, 225, 315]) {
@@ -203,17 +232,21 @@ module lidar_360() {
                 cylinder(r = 2.5, h = lidar_z, center = true);
         }
     }
-    // Cylindrical Optical Head
     color([0.1, 0.1, 0.12]) translate([0, 0, lidar_z + 21.0])
         cylinder(r = 30.0, h = 42.0, center = true);
+    translate([0, 0, lidar_z + 42.2])
+        label_3d("360deg LiDAR LD19", sz = 2.8, h = 0.6);
 }
 
 // MicoAir MTF-01 Optical Flow + ToF (Belly Sensor)
 module mtf01_sensor() {
     translate([0, 0, -duct_height/2 - 6.0]) {
         color([0.15, 0.15, 0.18]) cube([20.0, 29.0, 8.0], center = true);
-        color([0.05, 0.05, 0.05]) translate([0, 5.0, -4.5]) cylinder(r = 3.0, h = 2.0, center = true); // Camera
-        color([0.05, 0.05, 0.05]) translate([0, -6.0, -4.5]) cylinder(r = 2.0, h = 2.0, center = true); // ToF
+        color([0.05, 0.05, 0.05]) translate([0, 5.0, -4.5]) cylinder(r = 3.0, h = 2.0, center = true);
+        color([0.05, 0.05, 0.05]) translate([0, -6.0, -4.5]) cylinder(r = 2.0, h = 2.0, center = true);
+        translate([0, 0, -4.8])
+            rotate([180, 0, 0])
+            label_3d("MTF-01 FLOW+TOF", sz = 1.8, h = 0.4);
     }
 }
 
@@ -221,19 +254,18 @@ module mtf01_sensor() {
 module elrs_receiver() {
     translate([0, -62.0, 4.0]) {
         color([0.1, 0.1, 0.1]) cube([11.0, 17.0, 3.0], center = true);
-        color([0.05, 0.05, 0.05]) translate([0, -8.0, 4.0]) cube([50.0, 2.5, 2.5], center = true); // T-antenna
+        color([0.05, 0.05, 0.05]) translate([0, -8.0, 4.0]) cube([50.0, 2.5, 2.5], center = true);
+        translate([0, 0, 2.0])
+            label_3d("ELRS 2.4G", sz = 1.5, h = 0.4);
     }
 }
 
 // ==============================================================================
-// COMPLETE MONOLITHIC DRONE ASSEMBLY
+// COMPLETE MONOLITHIC DRONE ASSEMBLY WITH 3D COMPONENT MARKINGS
 // ==============================================================================
 module complete_nidar_airmouse_system() {
-    // 1. Chassis Deck
-    translate([0, 0, -duct_height/2 + deck_thickness/2])
-        chassis_deck();
+    chassis_deck();
 
-    // 2. Ducts, Motors, Propellers, Landing Skids
     positions = [
         [ motor_x,  motor_y_front],
         [-motor_x,  motor_y_front],
@@ -247,7 +279,6 @@ module complete_nidar_airmouse_system() {
         gemfan_prop(pos[0], pos[1]);
     }
 
-    // 3. Complete Electronics System Integration
     matek_bec();
     matek_fc();
     raspberry_pi_5();
