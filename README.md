@@ -38,9 +38,13 @@ The mission requires an autonomous unmanned aerial system to navigate an unknown
 
 ## 🛠️ Complete System Specifications & Bill of Materials
 
+### 📸 Labeled Drone Component Placement Architecture
+![NIDAR AirMouse Component Placement Architecture](./docs/images/drone_component_placement_diagram.jpg)
+*Detailed vertical stacking elevation and spatial coordinates are documented in [`docs/COMPONENT_PLACEMENT_AND_ARCHITECTURE.md`](./docs/COMPONENT_PLACEMENT_AND_ARCHITECTURE.md).*
+
 | Subsystem | Component | Role & Functionality |
 | :--- | :--- | :--- |
-| **Airframe** | Custom 3.5" Unibody Ducted Cinewhoop | 3D-Printed in Carbon-Fiber PETG (PETG-CF) with 360° ducted prop guards. Outer width: **23.6 cm** ($\le 26.0\text{ cm}$ constraint). |
+| **Airframe** | Custom 3.5" Unibody Ducted Cinewhoop | Aerospace Aluminum 7075-T6 / PETG-CF with 360° ducted prop guards. Outer width: **22.1 cm** ($\le 26.0\text{ cm}$ constraint). |
 | **Flight Controller** | **Matek H743-WLITE** | High-performance STM32H743 autopilot running ArduPilot/PX4; dual IMU, baro, CAN bus, 7x UARTs. |
 | **Power Distribution** | **Matek BEC12S-PRO** (9-55V) | Dedicated switching regulator providing clean 5.2V @ 5A for Raspberry Pi 5 & sensors, and 12V @ 2A for peripherals. |
 | **Companion Computer** | **Raspberry Pi 5 (4GB RAM)** | Runs ROS 2, LiDAR SLAM (Cartographer / Hector SLAM), navigation, and survivor geolocation. |
