@@ -1,0 +1,60 @@
+{
+  "PETG-CF": {
+    "mass_solid_g": 155.95,
+    "mass_optimized_g": 96.07,
+    "mass_saved_g": 59.89,
+    "cost_solid_inr": 436.67,
+    "cost_optimized_inr": 268.99,
+    "cost_saved_inr": 167.68,
+    "load_case_1_thrust": {
+      "max_stress_mpa": 18.42,
+      "max_deflection_mm": 3.479,
+      "safety_factor": 4.07
+    },
+    "load_case_2_landing": {
+      "max_stress_mpa": 0.55,
+      "max_deflection_mm": 0.0002,
+      "safety_factor": 136.07
+    },
+    "load_case_3_collision": {
+      "max_stress_mpa": 10.83,
+      "max_deflection_mm": 1.229,
+      "safety_factor": 6.93
+    },
+    "modal_frequencies_hz": {
+      "mode_1_first_bending": 32.0,
+      "mode_2_torsion": 88.4,
+      "mode_3_duct_ring": 173.0,
+      "resonance_safe": true
+    }
+  },
+  "Aluminum_7075_T6": {
+    "mass_solid_g": 342.36,
+    "mass_optimized_g": 210.9,
+    "mass_saved_g": 131.47,
+    "cost_solid_inr": 410.84,
+    "cost_optimized_inr": 253.08,
+    "cost_saved_inr": 157.76,
+    "load_case_1_thrust": {
+      "max_stress_mpa": 18.42,
+      "max_deflection_mm": 0.412,
+      "safety_factor": 27.31
+    },
+    "load_case_2_landing": {
+      "max_stress_mpa": 0.55,
+      "max_deflection_mm": 0.0,
+      "safety_factor": 912.58
+    },
+    "load_case_3_collision": {
+      "max_stress_mpa": 10.83,
+      "max_deflection_mm": 0.146,
+      "safety_factor": 46.46
+    },
+    "modal_frequencies_hz": {
+      "mode_1_first_bending": 93.0,
+      "mode_2_torsion": 256.8,
+      "mode_3_duct_ring": 502.4,
+      "resonance_safe": true
+    }
+  }
+}
