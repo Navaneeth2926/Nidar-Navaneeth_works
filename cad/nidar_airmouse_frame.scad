@@ -1,268 +1,196 @@
 // ==============================================================================
-// NIDAR AirMouse: Custom 3.5" Ducted Unibody Cinewhoop Frame
-// Optimized for GPS-Denied Indoor Search & Mapping Challenge
-// Material: PETG-CF (Carbon Fiber Reinforced PETG) + TPU 95A Dampers
+// NIDAR AirMouse: 3.5" Metal Unibody Ducted Cinewhoop Complete Assembly
+// Aerospace Aluminum 7075-T6 Chassis with EMAX ECO II 2004 Motors,
+// Gemfan D90-3 Tri-Blade Propellers, and 18mm Landing Skids.
 // ==============================================================================
 
 $fn = 60; // Smooth curves for export
 
-// ---------------------- GLOBAL PARAMETERS ----------------------
-prop_diameter_inch   = 3.5;
-prop_radius_mm       = (prop_diameter_inch * 25.4) / 2; // ~44.45 mm
-blade_clearance      = 2.05; // mm tip clearance
-duct_inner_radius    = prop_radius_mm + blade_clearance; // 46.5 mm (93 mm ID)
-duct_wall_thick      = 2.2;  // mm (rigid PETG-CF wall)
+// ---------------------- SPECIFICATIONS & DIMENSIONS ----------------------
+deck_thickness       = 3.0;  // mm (rigid aluminum chassis)
+fuselage_width       = 68.0; // mm
+fuselage_length      = 146.0;// mm
+
+// Propeller: Gemfan D90-3 (3.5" / 90mm Tri-Blade)
+prop_dia_mm          = 89.0; 
+prop_radius          = prop_dia_mm / 2; // 44.5 mm
+blade_clearance      = 2.0;  // 2.0 mm blade tip clearance
+duct_inner_radius    = prop_radius + blade_clearance; // 46.5 mm (93 mm ID)
+duct_wall_thick      = 2.2;  // 2.2 mm
 duct_outer_radius    = duct_inner_radius + duct_wall_thick; // 48.7 mm (97.4 mm OD)
 duct_height          = 26.0; // mm
 
-// Wheelbase & Motor Spacing (Deadcat/Squished-X for zero prop in camera FOV)
-motor_x_offset       = 62.0; // mm from center
-motor_y_front        = 58.0; // mm front offset
-motor_y_rear         = 58.0; // mm rear offset
-motor_mount_circle   = 12.0; // mm PCD (standard 2004/2204 12x12mm)
-motor_mount_hole_dia = 2.2;  // M2 clearance
-motor_center_hole    = 5.5;  // mm center shaft/c-clip hole
+// Motor Offsets (Squished-X Deadcat layout)
+motor_x              = 62.0; // mm
+motor_y_front        = 58.0; // mm
+motor_y_rear         = 58.0; // mm
 
-// Fuselage Plate Dimensions
-deck_thickness       = 3.2;  // mm
-fuselage_width       = 68.0; // mm
-fuselage_length      = 150.0;// mm
+// Motor Specs: EMAX ECO II 2004 3000KV
+motor_bell_radius    = 12.35; // 24.7 mm outer bell diameter
+motor_base_height    = 3.5;   // mm
+motor_bell_height    = 9.5;   // mm
+motor_shaft_radius   = 2.5;   // 5.0 mm shaft diameter
+motor_shaft_height   = 5.0;   // mm
 
-// Mounting Stack Specifications
-// Matek H743-WLITE & 4-in-1 ESC Stack: 30.5 x 30.5 mm & 20 x 20 mm
-stack_305_spacing    = 30.5;
-stack_200_spacing    = 20.0;
+// Landing Gear: 18mm ground clearance
+leg_height           = 18.0;  // mm
+leg_radius           = 4.5;   // mm
+foot_radius          = 8.5;   // mm
+foot_height          = 3.0;   // mm
 
-// Raspberry Pi 5 + AI HAT+ Stack: 58.0 x 49.0 mm (M2.5)
-pi5_hole_x           = 49.0;
+// Stacks
+fc_stack_spacing     = 30.5;  // M3 Matek H743-WLITE
+pi5_hole_x           = 49.0;  // M2.5 Raspberry Pi 5
 pi5_hole_y           = 58.0;
-
-// LiDAR Top Platform Riser
-lidar_mount_spacing  = 34.0; // M2.5 pattern for LD19 / RPLIDAR C1
-lidar_riser_height   = 28.0; // Clear of 360 deg prop duct plane
-
-// Optical Flow / Downward ToF Mount (MicoAir MTF-01 / Matek 3901-L0X)
-mtf01_hole_x         = 24.0;
-mtf01_hole_y         = 32.0;
 
 // ---------------------- MODULE DEFINITIONS ----------------------
 
-// 1. Aerodynamic Ducted Shroud with Flared Bellmouth Lip
-module duct_shroud() {
-    difference() {
-        union() {
-            // Main cylindrical duct wall
-            cylinder(r = duct_outer_radius, h = duct_height, center = true);
-            // Flared aerodynamic bellmouth inlet lip
-            translate([0, 0, duct_height/2 - 1.5])
-                rotate_extrude()
-                translate([duct_outer_radius - 1.2, 0, 0])
-                circle(r = 2.5);
-            // Outer bumper rib for wall collision protection
-            translate([0, 0, 0])
-                rotate_extrude()
-                translate([duct_outer_radius, 0, 0])
-                circle(r = 1.8);
-        }
-        // Inner aerodynamic bore
-        cylinder(r = duct_inner_radius, h = duct_height + 4, center = true);
-    }
-}
-
-// 2. Motor Pod and SIMP-Optimized Aerodynamic Stator Struts
-module motor_pod_and_struts() {
-    // Central motor hub
-    difference() {
-        cylinder(r = 9.0, h = deck_thickness + 1.5, center = true);
-        // Center shaft hole
-        cylinder(r = motor_center_hole / 2, h = 10, center = true);
-        // 4x 12x12mm M2 motor mounting holes
-        for (a = [45, 135, 225, 315]) {
-            rotate([0, 0, a])
-                translate([motor_mount_circle / 2, 0, 0])
-                cylinder(r = motor_mount_hole_dia / 2, h = 10, center = true);
-        }
-    }
-    
-    // 3x Aerodynamic teardrop stator struts connecting motor hub to duct wall
-    for (ang = [0, 120, 240]) {
-        rotate([0, 0, ang]) {
-            translate([duct_inner_radius / 2, 0, -duct_height/4])
-                cube([duct_inner_radius, 2.8, deck_thickness + 1.0], center = true);
+// 1. Central Fuselage Chassis
+module central_chassis() {
+    color([0.35, 0.38, 0.42]) { // Anodized Aerospace Aluminum 7075
+        difference() {
+            // Main fuselage plate
+            cube([fuselage_width, fuselage_length, deck_thickness], center = true);
+            
+            // Matek H743 30.5x30.5mm M3 Holes
+            for (dx = [-fc_stack_spacing/2, fc_stack_spacing/2]) {
+                for (dy = [-fc_stack_spacing/2, fc_stack_spacing/2]) {
+                    translate([dx, dy, 0]) cylinder(r = 1.6, h = 10, center = true);
+                }
+            }
+            // Raspberry Pi 5 58x49mm M2.5 Holes
+            for (dx = [-pi5_hole_x/2, pi5_hole_x/2]) {
+                for (dy = [-pi5_hole_y/2, pi5_hole_y/2]) {
+                    translate([dx, dy, 0]) cylinder(r = 1.3, h = 10, center = true);
+                }
+            }
+            // MicoAir MTF-01 Optical Flow / ToF Center Window
+            cube([26.0, 18.0, 10], center = true);
+            
+            // Battery Strap Cutouts
+            translate([0, 32, 0]) cube([22.0, 3.5, 10], center = true);
+            translate([0, -32, 0]) cube([22.0, 3.5, 10], center = true);
         }
     }
 }
 
-// 3. Single Assembled Propeller Nacelle / Corner
-module ducted_motor_corner(x_pos, y_pos) {
-    translate([x_pos, y_pos, 0]) {
-        duct_shroud();
-        translate([0, 0, -duct_height/2 + deck_thickness/2 + 1.0])
-            motor_pod_and_struts();
-    }
-}
-
-// 4. Central Fuselage Core with Component Cutouts & Mounting Holes
-module central_fuselage() {
-    difference() {
-        // Main deck body with filleted corners
-        hull() {
-            translate([0, 45, 0]) cylinder(r = 18, h = deck_thickness, center = true);
-            translate([0, -45, 0]) cylinder(r = 18, h = deck_thickness, center = true);
-            translate([fuselage_width/2 - 6, 0, 0]) cube([12, fuselage_length - 30, deck_thickness], center = true);
-            translate([-fuselage_width/2 + 6, 0, 0]) cube([12, fuselage_length - 30, deck_thickness], center = true);
-        }
-        
-        // Matek H743-WLITE & ESC 30.5x30.5mm mounting holes
-        for (dx = [-stack_305_spacing/2, stack_305_spacing/2]) {
-            for (dy = [-stack_305_spacing/2, stack_305_spacing/2]) {
-                translate([dx, dy, 0]) cylinder(r = 1.6, h = 15, center = true); // M3
+// 2. Ducted Shroud & Motor Pod with Stator Arms
+module ducted_pod_and_arm(mx, my) {
+    color([0.4, 0.42, 0.46]) {
+        translate([mx, my, 0]) {
+            // Duct Shroud
+            difference() {
+                cylinder(r = duct_outer_radius, h = duct_height, center = true);
+                cylinder(r = duct_inner_radius, h = duct_height + 2, center = true);
             }
-        }
-        
-        // 20x20mm secondary mounting holes
-        for (dx = [-stack_200_spacing/2, stack_200_spacing/2]) {
-            for (dy = [-stack_200_spacing/2, stack_200_spacing/2]) {
-                translate([dx, dy, 0]) cylinder(r = 1.3, h = 15, center = true); // M2.5
-            }
-        }
-        
-        // Raspberry Pi 5 Mounting Holes (58.0 x 49.0 mm M2.5)
-        for (dx = [-pi5_hole_x/2, pi5_hole_x/2]) {
-            for (dy = [-pi5_hole_y/2, pi5_hole_y/2]) {
-                translate([dx, dy, 0]) cylinder(r = 1.4, h = 15, center = true);
-            }
-        }
-        
-        // Optical Flow & Downward ToF Window Cutout (Center belly)
-        translate([0, 5, 0]) {
-            cube([26.0, 18.0, 15], center = true);
-            // MTF-01 mounting screw holes
-            for (dx = [-mtf01_hole_x/2, mtf01_hole_x/2]) {
-                for (dy = [-mtf01_hole_y/2, mtf01_hole_y/2]) {
-                    translate([dx, dy, 0]) cylinder(r = 1.1, h = 15, center = true);
+            // Central Motor Hub Plate
+            translate([0, 0, -duct_height/2 + deck_thickness/2]) {
+                difference() {
+                    cylinder(r = 10.0, h = deck_thickness, center = true);
+                    cylinder(r = 2.5, h = 10, center = true); // Shaft hole
+                    // 12x12mm M2 motor mounting pattern
+                    for (dx = [-6, 6]) {
+                        for (dy = [-6, 6]) {
+                            translate([dx, dy, 0]) cylinder(r = 1.1, h = 10, center = true);
+                        }
+                    }
+                }
+                // 3x Aerodynamic Stator Struts
+                for (a = [30, 150, 270]) {
+                    rotate([0, 0, a])
+                        translate([duct_inner_radius/2, 0, 0])
+                        cube([duct_inner_radius, 2.5, deck_thickness], center = true);
                 }
             }
         }
+        // Connecting Arm Truss
+        hull() {
+            translate([mx * 0.4, my * 0.5, -duct_height/2 + deck_thickness/2])
+                cube([15, 12, deck_thickness], center = true);
+            translate([mx * 0.9, my * 0.9, -duct_height/2 + deck_thickness/2])
+                cylinder(r = 8, h = deck_thickness, center = true);
+        }
+    }
+}
+
+// 3. EMAX ECO II 2004 3000KV Brushless Motor
+module emax_motor(mx, my) {
+    translate([mx, my, -duct_height/2 + deck_thickness]) {
+        // Motor Base (Satin Steel)
+        color([0.25, 0.25, 0.28])
+            cylinder(r = 11.0, h = motor_base_height);
         
-        // Battery Strap Routing Slots (Dual 20mm Kevlar straps)
-        translate([0, 32, 0]) cube([22.0, 3.5, 15], center = true);
-        translate([0, -32, 0]) cube([22.0, 3.5, 15], center = true);
-        
-        // Weight Reduction & Airflow Cutouts (SIMP topology light pockets)
-        translate([0, -52, 0]) cylinder(r = 10, h = 15, center = true);
+        // Motor Rotor Bell (Anodized Gunmetal Aluminum)
+        color([0.15, 0.15, 0.18])
+            translate([0, 0, motor_base_height])
+            cylinder(r = motor_bell_radius, h = motor_bell_height);
+            
+        // 5mm Output Prop Shaft (Polished Steel)
+        color([0.85, 0.85, 0.90])
+            translate([0, 0, motor_base_height + motor_bell_height])
+            cylinder(r = motor_shaft_radius, h = motor_shaft_height);
     }
 }
 
-// 5. Heavy-Duty Connecting Truss Spiders (Fuselage to Ducts)
-module structural_trusses() {
-    // Front-Left truss
-    hull() {
-        translate([0, motor_y_front/2, 0]) cube([fuselage_width - 10, 16, deck_thickness], center = true);
-        translate([motor_x_offset - 15, motor_y_front, 0]) cylinder(r = 8, h = deck_thickness, center = true);
-    }
-    // Front-Right truss
-    hull() {
-        translate([0, motor_y_front/2, 0]) cube([fuselage_width - 10, 16, deck_thickness], center = true);
-        translate([-motor_x_offset + 15, motor_y_front, 0]) cylinder(r = 8, h = deck_thickness, center = true);
-    }
-    // Rear-Left truss
-    hull() {
-        translate([0, -motor_y_rear/2, 0]) cube([fuselage_width - 10, 16, deck_thickness], center = true);
-        translate([motor_x_offset - 15, -motor_y_rear, 0]) cylinder(r = 8, h = deck_thickness, center = true);
-    }
-    // Rear-Right truss
-    hull() {
-        translate([0, -motor_y_rear/2, 0]) cube([fuselage_width - 10, 16, deck_thickness], center = true);
-        translate([-motor_x_offset + 15, -motor_y_rear, 0]) cylinder(r = 8, h = deck_thickness, center = true);
-    }
-    
-    // Duct-to-Duct Interlock Bridges (Lateral stiffness)
-    translate([motor_x_offset, 0, 0])
-        cube([duct_wall_thick * 2 + 2, motor_y_front + motor_y_rear - (duct_outer_radius * 1.6), deck_thickness + 2], center = true);
-    translate([-motor_x_offset, 0, 0])
-        cube([duct_wall_thick * 2 + 2, motor_y_front + motor_y_rear - (duct_outer_radius * 1.6), deck_thickness + 2], center = true);
-}
-
-// 6. Front Camera Casing & Tilt-Adjustable Cradle (Raspberry Pi Global Shutter Cam)
-module front_camera_cage() {
-    translate([0, fuselage_length/2 - 5, 10]) {
-        difference() {
-            cube([36.0, 24.0, 26.0], center = true);
-            // Interior hollow for Global Shutter Camera
-            cube([30.0, 28.0, 22.0], center = true);
-            // Front lens aperture
-            rotate([90, 0, 0]) cylinder(r = 9.5, h = 30, center = true);
-            // Tilt pivot mounting screw holes (M2)
-            rotate([0, 90, 0]) cylinder(r = 1.1, h = 40, center = true);
-        }
-    }
-}
-
-// 7. Top LiDAR Elevated Deck (Unobstructed 360° Horizontal Laser Line)
-module top_lidar_tower() {
-    translate([0, 0, lidar_riser_height]) {
-        difference() {
-            // Platform
-            cylinder(r = 24.0, h = 2.8, center = true);
-            // Center cable pass-through hole
-            cylinder(r = 7.0, h = 10, center = true);
-            // 4x M2.5 mounting holes for LD19 / RPLIDAR C1
-            for (a = [45, 135, 225, 315]) {
-                rotate([0, 0, a])
-                    translate([lidar_mount_spacing / sqrt(2), 0, 0])
-                    cylinder(r = 1.4, h = 10, center = true);
-            }
-        }
-        // 4x Standoff riser legs connecting to central fuselage
-        for (a = [45, 135, 225, 315]) {
-            rotate([0, 0, a])
-                translate([20.0, 0, -lidar_riser_height / 2])
-                cylinder(r = 3.0, h = lidar_riser_height, center = true);
-        }
-    }
-}
-
-// 8. Bottom TPU Landing Skid & Ground Standoffs (15mm Ground Clearance)
-module landing_skids() {
-    for (dx = [-motor_x_offset, motor_x_offset]) {
-        for (dy = [-motor_y_rear, motor_y_front]) {
-            translate([dx, dy, -duct_height/2 - 6]) {
-                cylinder(r = 6.0, h = 12.0, center = true);
+// 4. Gemfan D90-3 (3.5" Tri-Blade) Propeller
+module gemfan_d90_propeller(mx, my) {
+    prop_z = -duct_height/2 + deck_thickness + motor_base_height + motor_bell_height + 1.0;
+    translate([mx, my, prop_z]) {
+        color([0.0, 0.75, 0.90, 0.85]) { // Translucent Cyan Polycarbonate
+            // Central Propeller Hub
+            cylinder(r = 6.0, h = 3.5, center = true);
+            
+            // 3 Pitched Blades at 120°
+            for (a = [0, 120, 240]) {
+                rotate([0, 0, a]) {
+                    translate([prop_radius / 2 + 3, 0, 0])
+                        rotate([12, 0, 0]) // Aerodynamic pitch angle
+                        cube([prop_radius - 5, 7.5, 1.8], center = true);
+                }
             }
         }
     }
 }
 
-// ==============================================================================
-// COMPLETE MONOLITHIC UNIBODY CINEWHOOP ASSEMBLY
-// ==============================================================================
-module nidar_airmouse_unibody_frame() {
-    color([0.2, 0.2, 0.25]) { // PETG-CF matte carbon grey
-        union() {
-            // Central Deck & Structural Trusses
-            central_fuselage();
-            structural_trusses();
-            
-            // 4x Ducted Nacelles with Prop Guards
-            ducted_motor_corner( motor_x_offset,  motor_y_front); // Front Right
-            ducted_motor_corner(-motor_x_offset,  motor_y_front); // Front Left
-            ducted_motor_corner( motor_x_offset, -motor_y_rear);  // Rear Right
-            ducted_motor_corner(-motor_x_offset, -motor_y_rear);  // Rear Left
-            
-            // Integrated Front Camera Cage
-            front_camera_cage();
-            
-            // Elevated 360° LiDAR Platform
-            top_lidar_tower();
-        }
-    }
+// 5. Landing Legs (18mm Ground Clearance)
+module landing_leg(mx, my) {
+    leg_x = mx + (mx > 0 ? 8 : -8);
+    leg_y = my + (my > 0 ? 8 : -8);
+    base_z = -duct_height/2;
     
-    // TPU Landing Skids & Vibration Dampers (Cyan)
-    color([0.0, 0.7, 0.85, 0.9]) {
-        landing_skids();
+    color([0.3, 0.32, 0.35]) { // Aerospace Aluminum Strut
+        // Downward Strut
+        translate([leg_x, leg_y, base_z - leg_height/2])
+            cylinder(r = leg_radius, h = leg_height, center = true);
+        // Stable Base Foot Pad
+        translate([leg_x, leg_y, base_z - leg_height - foot_height/2])
+            cylinder(r = foot_radius, h = foot_height, center = true);
     }
 }
 
-// Render the complete frame
-nidar_airmouse_unibody_frame();
+// ==============================================================================
+// COMPLETE MONOLITHIC ASSEMBLY
+// ==============================================================================
+module complete_nidar_airmouse() {
+    // 1. Central Chassis
+    translate([0, 0, -duct_height/2 + deck_thickness/2])
+        central_chassis();
+        
+    // 2. 4x Ducts, Motors, Props & Landing Legs
+    positions = [
+        [ motor_x,  motor_y_front],
+        [-motor_x,  motor_y_front],
+        [ motor_x, -motor_y_rear],
+        [-motor_x, -motor_y_rear]
+    ];
+    
+    for (pos = positions) {
+        ducted_pod_and_arm(pos[0], pos[1]);
+        emax_motor(pos[0], pos[1]);
+        gemfan_d90_propeller(pos[0], pos[1]);
+        landing_leg(pos[0], pos[1]);
+    }
+}
+
+// Render complete drone assembly
+complete_nidar_airmouse();
