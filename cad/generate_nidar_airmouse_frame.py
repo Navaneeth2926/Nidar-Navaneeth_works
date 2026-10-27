@@ -6,7 +6,7 @@ Software: Autodesk Fusion 360 Python API
 
 Full Multi-Component Physical Assembly with Component Markings & Labels:
 1. Chassis: 5.0" Unibody Ducted Frame with SIMP Topology Optimization Pockets
-   - Material: Aerospace Aluminum 7075-T6 / PETG-CF (SIMP Isogrid mass reduced)
+   - Material: PETG Carbon-Fibre (PETG-CF with chopped micro-carbon fibers for high stiffness & vibration damping)
    - Wheelbase: 260 mm (Squished-X Deadcat layout)
    - Outer Envelope: 32.6 cm x 31.8 cm (Comfortably fits inside 2ft x 2ft launch box)
    - Embossed Marking: "NIDAR AIRMOUSE 5IN 6S"
@@ -127,7 +127,7 @@ def run(context):
         # =====================================================================
         # SPECIFICATIONS & DIMENSIONS (All internal Fusion units in cm)
         # =====================================================================
-        # 1. 5-INCH AIRFRAME CHASSIS DIMENSIONS (Aerospace Aluminum 7075 / PETG-CF)
+        # 1. 5-INCH AIRFRAME CHASSIS DIMENSIONS (PETG Carbon-Fibre / PETG-CF)
         deck_t = 0.35       # 3.5 mm rigid base deck for 5" arm stiffness
         fuselage_w = 7.6    # 76 mm central deck width
         fuselage_l = 19.2   # 192 mm length (fits 6S battery, FC, Pi 5, & camera)
@@ -179,8 +179,8 @@ def run(context):
             adsk.fusion.FeatureOperations.NewBodyFeatureOperation
         )
         frame_body = ext_fuse.bodies.item(0)
-        frame_body.name = "Preserve_Fuselage_Chassis_5IN"
-        apply_appearance(frame_body, app, "Aluminum - Anodized Glossy (Grey)")
+        frame_body.name = "Preserve_Fuselage_Chassis_PETG_CF"
+        apply_appearance(frame_body, app, "Carbon Fiber - Plain")
 
         # 4 Continuous 360-degree Ducted Shrouds & Stator Struts (5-Inch)
         for mx, my, name in motor_positions:
@@ -284,7 +284,7 @@ def run(context):
             )
             leg_body = ext_leg.bodies.item(0)
             leg_body.name = f"Landing_Leg_{name}"
-            apply_appearance(leg_body, app, "Aluminum - Satin")
+            apply_appearance(leg_body, app, "Carbon Fiber - Plain")
 
             # Flat Foot Pad at Base
             planeInputLeg = rootComp.constructionPlanes.createInput()
@@ -768,7 +768,7 @@ def run(context):
         # Final Success Dialog with Full Specifications & Verification
         ui.messageBox(
             "NIDAR AirMouse: 5-Inch 6S Drone System Successfully Generated!\n\n"
-            "Chassis: 5.0\" Aerospace Aluminum / PETG-CF Unibody (260 mm Wheelbase)\n"
+            "Chassis: 5.0\" Monolithic PETG Carbon-Fibre (PETG-CF) Unibody (260 mm Wheelbase)\n"
             "Outer Envelope: 32.6 cm x 31.8 cm (Fits inside 2ft x 2ft launch box)\n"
             "Motors: 4x EMAX ECO II 2306 1700KV | Props: 4x 5.0\" Tri-Blade (HQProp 5030-3)\n"
             "Battery: Molicel INR21700-P50B 6S1P 5000mAh (21.6V, 108 Wh) + Amass XT60\n"

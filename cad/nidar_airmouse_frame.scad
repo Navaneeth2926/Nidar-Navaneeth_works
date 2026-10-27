@@ -49,7 +49,7 @@ module label_3d(txt, sz=2.5, h=0.5) {
 // 1. 5-INCH CHASSIS WITH SIMP TOPOLOGY OPTIMIZATION WEIGHT REDUCTION & MARKINGS
 // ==============================================================================
 module chassis_deck() {
-    color([0.32, 0.35, 0.38]) { // Anodized Aerospace Aluminum / PETG-CF
+    color([0.16, 0.17, 0.20]) { // 3D Printed PETG Carbon-Fibre (PETG-CF Matte Charcoal)
         difference() {
             cube([fuselage_width, fuselage_length, deck_thickness], center = true);
             // Flight Controller 30.5x30.5mm M3 Holes
@@ -81,7 +81,7 @@ module chassis_deck() {
 
 // 2. 5-Inch Ducted Shroud & Motor Pod
 module ducted_pod(mx, my) {
-    color([0.38, 0.40, 0.44]) {
+    color([0.18, 0.19, 0.22]) { // PETG Carbon-Fibre Shroud & Motor Pod
         translate([mx, my, 0]) {
             difference() {
                 cylinder(r = duct_outer_radius, h = duct_height, center = true);
@@ -115,7 +115,7 @@ module landing_skid(mx, my) {
     leg_x = mx + (mx > 0 ? 11 : -11);
     leg_y = my + (my > 0 ? 11 : -11);
     base_z = -duct_height/2;
-    color([0.28, 0.30, 0.34]) {
+    color([0.14, 0.15, 0.17]) { // PETG-CF / TPU Landing Legs
         translate([leg_x, leg_y, base_z - leg_height/2])
             cylinder(r = leg_radius, h = leg_height, center = true);
         translate([leg_x, leg_y, base_z - leg_height - foot_height/2])
