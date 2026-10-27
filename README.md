@@ -44,8 +44,9 @@ The mission requires an autonomous unmanned aerial system to navigate an unknown
 
 | Subsystem | Component | Role & Functionality |
 | :--- | :--- | :--- |
-| **Airframe** | Custom 3.5" Unibody Ducted Cinewhoop | Aerospace Aluminum 7075-T6 / PETG-CF with 360° ducted prop guards. Outer width: **22.1 cm** ($\le 26.0\text{ cm}$ constraint). |
+| **Airframe** | Custom 5.0" Unibody Ducted Cinewhoop | Aerospace Aluminum 7075-T6 / PETG-CF with 360° ducted prop guards. Dimensions: **32.6 cm × 31.8 cm** (Comfortably fits inside 2ft × 2ft launch box). |
 | **Flight Controller** | **Matek H743-WLITE** | High-performance STM32H743 autopilot running ArduPilot/PX4; dual IMU, baro, CAN bus, 7x UARTs. |
+| **Battery Power** | **Molicel 6S1P 5000mAh (P50B)** | 21.6V nominal, 108 Wh high-density Li-ion pack delivering **38–44 minutes** autonomous flight endurance. |
 | **Power Distribution** | **Matek BEC12S-PRO** (9-55V) | Dedicated switching regulator providing clean 5.2V @ 5A for Raspberry Pi 5 & sensors, and 12V @ 2A for peripherals. |
 | **Companion Computer** | **Raspberry Pi 5 (4GB RAM)** | Runs ROS 2, LiDAR SLAM (Cartographer / Hector SLAM), navigation, and survivor geolocation. |
 | **Edge AI Accelerator** | **Raspberry Pi AI HAT+ (13 TOPS)** | Hailo-8L neural processor running real-time YOLOv8/v10 survivor detection inference at >30 FPS. |
@@ -55,35 +56,24 @@ The mission requires an autonomous unmanned aerial system to navigate an unknown
 | **Optical Flow & ToF** | **MicoAir MTF-01** (or Matek 3901-L0X) | Bottom-mounted optical flow camera + ToF distance sensor for sub-centimeter GPS-denied position and altitude hold. |
 | **Radio Control Link** | **SpeedyBee Nano 2.4G ELRS Receiver** | Long-range, low-latency 2.4GHz ExpressLRS telemetry and safety emergency-stop link. |
 | **Offline Network** | **Dedicated Wi-Fi 6 Dual-Band Router** | Offline 5GHz IEEE 802.11ax local LAN streaming live camera feed and 2D grid map to Ground Control Station. |
-| **Propulsion Motors** | **2004 Brushless Motors (3000KV)** | EMAX ECO II 2004 (or T-Motor F2004) delivering ~520g thrust/motor on 4S. |
-| **Propellers** | **Gemfan D90-3 / 3520-3 Tri-Blade** | 3.5" (90mm) 3-blade high-solidity ducted propellers. |
+| **Propulsion Motors** | **2306 Brushless Motors (1700KV)** | EMAX ECO II 2306 1700KV delivering high torque per amp on 6S for maximum hover efficiency (~8.4 g/W). |
+| **Propellers** | **HQProp 5030-3 / Gemfan 5130 Tri-Blade** | 5.0" (127mm) 3-blade high-efficiency low-pitch propellers. |
 | **Power Filtering** | **Rubycon ZLH 35V 1000µF Low-ESR** | High ripple current filtering capacitor absorbing ESC switching spikes to protect digital electronics. |
 
 ---
 
 ## ⚡ Propulsion Physics & Motor Research
 
-### 1. Why Smaller Drones (3.5") Require Higher Motor RPM
-The aerodynamic thrust produced by a propeller is given by:
-$$T \propto \rho \cdot D^4 \cdot n^2$$
-Downsizing from a 5" prop to a 3.5" prop reduces the diameter factor $(D^4)$ by **over 75%** ($\frac{3.5^4}{5.0^4} \approx 0.24$). To generate the required ~2,000g total thrust to carry the ~680g AUW drone at a responsive **3:1 Thrust-to-Weight ratio**, the rotational speed $n$ must increase. A **3000KV motor on 4S LiPo (16.8V)** delivers the required loaded speed of ~35,000 RPM.
+### 1. Aerodynamic Advantages of 5-Inch Over 3.5"
+Expanding rotor disc diameter from 3.5" to 5.0" more than doubles the swept propeller area ($+104\%$). Disc loading is halved, raising hover efficiency from $4.45\text{ g/W}$ to over **$8.2\text{ g/W}$**. On a 6S supply ($21.6\text{ V}$ nominal), continuous hover current drops to only **~6.9 A**, allowing the 5000mAh Molicel P50B pack to deliver an unprecedented **38 to 44 minutes of continuous flight**.
 
-### 2. Propeller Blade Analysis: Tri-Blade (3-Blade) vs Twin-Blade (2-Blade)
-* **Verdict: Tri-Blade (3-Blade) is significantly superior for indoor ducted cinewhoops.**
-* **Key Advantages:**
-  * **+25% Higher Static Thrust:** Compaction inside the fixed 3.5" duct diameter requires higher disc solidity.
-  * **Duct Aerodynamic Shroud Coupling:** 3-blade props maintain steady boundary layer pressure along the duct wall, maximizing shroud lift.
-  * **Lower IMU Vibration:** 3-blade distributes torque load across 120° intervals, reducing gyro ripple.
-* **Recommended Propellers:** **Gemfan D90-3** (90mm, 3.0" pitch, 3-blade) or **Gemfan 3520-3** (3.5", 2.0" pitch, 3-blade).
+### 2. Motor Selection Matrix (6S 5-Inch Configuration)
 
-### 3. Motor Sourcing Comparison (Budget: ₹5,000 - ₹7,000 max for 4 motors; Delivery < 2 weeks in India)
-
-| Rank & Model | KV | Weight | Thrust (4S) | Price / Unit | Total (4 Motors) | Availability & Delivery |
-| :---: | :---: | :---: | :---: | :---: | :---: | :--- |
-| **#1 EMAX ECO II 2004** *(Top Pick)* | **3000KV** | 16.4g | 520g | **₹1,739** | **₹6,956** | **Robu.in** (In Stock, 2–4 days express delivery) |
-| **#2 T-Motor F2004** | **3000KV** | 16.4g | 510g | **₹1,699** | **₹6,796** | **Robu.in / QuadKopter.in** (3–5 days) |
-| **#3 HGLRC Aeolus 2004** | **3000KV** | 16.6g | 495g | **₹1,499** | **₹5,996** | **Robu.in / Drkarts** (3–5 days) |
-| **#4 FLYCCI FK2004 V2** | **3150KV** | 16.2g | 535g | **₹1,350** | **₹5,400** | **Electropi / QuadKopter.in** (3–5 days) |
+| Rank & Model | KV | Stator Size | Hover Efficiency ($g/W$) | Unit Price (INR) | Sourcing & Verdict |
+| :---: | :---: | :---: | :---: | :---: | :--- |
+| **#1 EMAX ECO II 2306** *(Winner)* | **1700KV** | 23 × 6 mm | **~8.4 g/W** | **₹1,590** | **Robu.in** (Highest torque, maximum endurance) |
+| **#2 T-Motor Velox V2207** | **1750KV** | 22 × 7 mm | **~8.0 g/W** | **₹1,750** | **Robu.in / QuadKopter** (Smoothest balancing) |
+| **#3 EMAX ECO II 2207** | **1900KV** | 22 × 7 mm | ~7.2 g/W | ₹1,590 | Too high KV for 6S endurance hover |
 
 ---
 

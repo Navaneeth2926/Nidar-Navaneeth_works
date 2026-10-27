@@ -112,8 +112,8 @@ Li-ion (21700 Cyl.): ███████████████████�
 | **1. Standard LiPo** | Li-Po (High-C) | 4S 1500mAh 100C ($14.8\text{V}$) | **185 g** | **625 g** | **9.6 A** | 22.2 Wh / **17.8 Wh** | 80% | **7.5 min** | **8.5 min** | ₹2,400 |
 | **2. High-Cap LiPo** | Li-Po (Endurance) | 4S 4000mAh 60C ($14.8\text{V}$) | **450 g** | **890 g** | **16.8 A** | 59.2 Wh / **47.4 Wh** | 80% | **11.5 min** | **13.0 min** | ₹4,800 |
 | **3. Li-ion 18650** | Li-ion (Molicel P28A)| 4S1P 2800mAh 35A ($14.4\text{V}$) | **210 g** | **650 g** | **10.3 A** | 40.3 Wh / **35.5 Wh** | 88% | **14.2 min** | **16.0 min** | ₹1,650 |
-| **4. Li-ion 21700** *(Selected)* | **Li-ion (Molicel P45B)**| **4S1P 4500mAh 45A** ($14.4\text{V}$) | **295 g** | **735 g** | **12.6 A** | 64.8 Wh / **57.0 Wh** | **88%** | **18.5 min** | **21.0 min** | **₹2,100** |
-| **5. Max Li-ion 21700** | **Li-ion (Samsung 50S)**| **4S1P 5000mAh 35A** ($14.4\text{V}$) | **300 g** | **740 g** | **12.8 A** | 72.0 Wh / **63.4 Wh** | **88%** | **20.5 min** | **24.5 min** | **₹2,400** |
+| **4. 4S Li-ion 21700** | Li-ion (Molicel P45B)| 4S1P 4500mAh 45A ($14.4\text{V}$) | **295 g** | **735 g** | **12.6 A** | 64.8 Wh / **57.0 Wh** | 88% | **18.5 min** | **21.0 min** | ₹2,100 |
+| **5. 5" 6S Li-ion 21700** *(Supreme)* | **Li-ion (Molicel P50B)**| **6S1P 5000mAh 50A** ($21.6\text{V}$) | **450 g** | **970 g** | **~6.9 A** | **108.0 Wh / 95.0 Wh** | **88%** | **38.0 min** | **44.0 min** | **₹6,199** |
 
 *\*Cruising flight time accounts for Effective Translational Lift (ETL) during steady forward flight ($1.5 - 2.5\text{ m/s}$), which reduces induced power by 10–14% compared to stationary hover.*
 

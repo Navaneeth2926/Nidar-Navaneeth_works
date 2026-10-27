@@ -11,3 +11,5 @@ rulebook_sections.txt
 # Fusion 360 / CAD cache
 *.bak
 *.tmp
+__pycache__/
+*.pyc
