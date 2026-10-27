@@ -92,6 +92,8 @@ Downsizing from a 5" prop to a 3.5" prop reduces the diameter factor $(D^4)$ by 
 ### Files Included
 * [`cad/generate_nidar_airmouse_frame.py`](./cad/generate_nidar_airmouse_frame.py): **Autodesk Fusion 360 Python API script** to procedurally model the parametric unibody frame.
 * [`cad/nidar_airmouse_frame.scad`](./cad/nidar_airmouse_frame.scad): **OpenSCAD parametric design** ready for instant STL/3MF rendering.
+* [`docs/FRAME_MATERIAL_AND_BATTERY_COMPARISON.md`](./docs/FRAME_MATERIAL_AND_BATTERY_COMPARISON.md): **Material selection study & LiPo vs. Li-ion 20-25 min endurance trade-off report.**
+* [`docs/COMPONENT_PLACEMENT_AND_ARCHITECTURE.md`](./docs/COMPONENT_PLACEMENT_AND_ARCHITECTURE.md): Full 3D spatial layout, wiring schematic, and power architecture.
 * [`docs/AIRFRAME_AND_PROPULSION_ANALYSIS.md`](./docs/AIRFRAME_AND_PROPULSION_ANALYSIS.md): Comprehensive 20-page engineering and physics documentation.
 
 ### 3D Printing Recommendations
